@@ -112,8 +112,6 @@ export default function App() {
           <FarmDashboard
             operator={activeOperator}
             operators={operators}
-            sectors={sectors}
-            tasks={tasks}
             onLockTerminal={handleLockTerminal}
             onAddOperator={handleAddOperator}
             bgMode={bgMode}
