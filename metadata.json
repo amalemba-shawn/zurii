@@ -1,0 +1,6 @@
+{
+  "name": "Solum FarmOS · Passcode Terminal",
+  "description": "Modern minimalist agricultural terminal login with unique operator passcode authentication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
