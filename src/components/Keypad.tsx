@@ -1,6 +1,7 @@
 import React from 'react';
 import { Delete, RotateCcw } from 'lucide-react';
 import { sound } from '../utils/audio';
+import { useTheme } from '../context/ThemeContext';
 
 interface KeypadProps {
   onDigitPress: (digit: string) => void;
@@ -38,6 +39,8 @@ export const Keypad: React.FC<KeypadProps> = ({
   onClear,
   disabled = false
 }) => {
+  const { isDark } = useTheme();
+
   const handleKeyClick = (k: KeyConfig) => {
     if (disabled) return;
 
@@ -72,7 +75,11 @@ export const Keypad: React.FC<KeypadProps> = ({
               disabled={disabled}
               onClick={() => handleKeyClick(k)}
               aria-label="Clear passcode"
-              className="group relative flex flex-col items-center justify-center h-16 rounded-2xl border border-white/5 bg-white/[0.03] text-white/40 hover:text-white/80 hover:bg-white/[0.07] hover:border-white/10 active:scale-[0.96] active:bg-white/10 transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4E805B]"
+              className={`group relative flex flex-col items-center justify-center h-16 rounded-2xl border transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 cursor-pointer ${
+                isDark
+                  ? 'border-white/5 bg-white/[0.03] text-white/40 hover:text-white/80 hover:bg-white/[0.07] hover:border-white/10 active:scale-[0.96] active:bg-white/10'
+                  : 'border-slate-200 bg-slate-100/70 text-slate-500 hover:text-slate-900 hover:bg-slate-200/80 hover:border-slate-300 active:scale-[0.96] active:bg-slate-300/80 shadow-2xs'
+              }`}
             >
               <RotateCcw className="w-4 h-4 transition-transform group-hover:-rotate-45" />
               <span className="text-[10px] uppercase font-mono tracking-wider mt-1 opacity-70">
@@ -90,7 +97,11 @@ export const Keypad: React.FC<KeypadProps> = ({
               disabled={disabled}
               onClick={() => handleKeyClick(k)}
               aria-label="Delete last digit"
-              className="group relative flex flex-col items-center justify-center h-16 rounded-2xl border border-white/5 bg-white/[0.03] text-white/40 hover:text-white/80 hover:bg-white/[0.07] hover:border-white/10 active:scale-[0.96] active:bg-white/10 transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4E805B]"
+              className={`group relative flex flex-col items-center justify-center h-16 rounded-2xl border transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 cursor-pointer ${
+                isDark
+                  ? 'border-white/5 bg-white/[0.03] text-white/40 hover:text-white/80 hover:bg-white/[0.07] hover:border-white/10 active:scale-[0.96] active:bg-white/10'
+                  : 'border-slate-200 bg-slate-100/70 text-slate-500 hover:text-slate-900 hover:bg-slate-200/80 hover:border-slate-300 active:scale-[0.96] active:bg-slate-300/80 shadow-2xs'
+              }`}
             >
               <Delete className="w-5 h-5 transition-transform group-active:-translate-x-0.5" />
               <span className="text-[10px] uppercase font-mono tracking-wider mt-1 opacity-70">
@@ -107,13 +118,21 @@ export const Keypad: React.FC<KeypadProps> = ({
             disabled={disabled}
             onClick={() => handleKeyClick(k)}
             aria-label={`Digit ${k.label}`}
-            className="group relative flex flex-col items-center justify-center h-16 rounded-2xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.09] hover:border-[#4E805B]/50 active:scale-[0.96] active:bg-[#203325] transition-all duration-150 shadow-sm disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4E805B]"
+            className={`group relative flex flex-col items-center justify-center h-16 rounded-2xl border transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer ${
+              isDark
+                ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.09] hover:border-[#4E805B]/50 active:scale-[0.96] active:bg-[#203325] text-white'
+                : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-emerald-500/50 active:scale-[0.96] active:bg-emerald-50 text-slate-900 shadow-xs'
+            }`}
           >
-            <span className="font-mono text-xl md:text-2xl font-light text-white tracking-tight leading-none group-active:text-emerald-200">
+            <span className={`font-mono text-xl md:text-2xl font-normal tracking-tight leading-none ${
+              isDark ? 'text-white group-active:text-emerald-200' : 'text-slate-900 group-active:text-emerald-700'
+            }`}>
               {k.label}
             </span>
             {k.sub && (
-              <span className="text-[9px] font-mono tracking-widest text-white/35 group-hover:text-white/55 mt-1 leading-none uppercase">
+              <span className={`text-[9px] font-mono tracking-widest mt-1 leading-none uppercase ${
+                isDark ? 'text-white/35 group-hover:text-white/55' : 'text-slate-400 group-hover:text-slate-600'
+              }`}>
                 {k.sub}
               </span>
             )}

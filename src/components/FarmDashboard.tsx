@@ -7,6 +7,8 @@ import { SectorDetailView } from './dashboard/SectorDetailView';
 import { WeatherForecastSegment } from './dashboard/WeatherForecastSegment';
 import { MilkingRecordsView } from './dashboard/MilkingRecordsView';
 import { AddPasscodeModal } from './AddPasscodeModal';
+import { ThemeToggle } from './ThemeToggle';
+import { useTheme } from '../context/ThemeContext';
 import { sound } from '../utils/audio';
 import { 
   Menu, 
@@ -35,6 +37,7 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
   bgMode,
   onChangeBgMode
 }) => {
+  const { isDark } = useTheme();
   const [currentTab, setCurrentTab] = useState<DashboardSectorTab>('overview');
   const [sectors, setSectors] = useState<LivestockSector[]>([]);
   const [weather, setWeather] = useState<WeatherData>(livestockDb.getWeather());
@@ -106,7 +109,9 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
   const activeSector = sectors.find(s => s.id === currentTab);
 
   return (
-    <div className="min-h-screen bg-[#0C140F] text-[#E4ECE6] flex">
+    <div className={`min-h-screen flex transition-colors duration-200 ${
+      isDark ? 'bg-[#0C140F] text-[#E4ECE6]' : 'bg-[#F8FAF9] text-[#0F172A]'
+    }`}>
       {/* Left-Side Navigation Bar */}
       <LeftSidebar
         currentTab={currentTab}
@@ -124,22 +129,36 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
       {/* Main Content Area (offset by left sidebar on desktop) */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-72">
         {/* Top Header Bar */}
-        <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-white/10 bg-[#0E1611]/90 backdrop-blur-md">
+        <header className={`sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3.5 border-b backdrop-blur-md transition-colors ${
+          isDark 
+            ? 'border-white/10 bg-[#0E1611]/90 text-white' 
+            : 'border-slate-200 bg-white/90 text-slate-900 shadow-2xs'
+        }`}>
           {/* Left: Mobile hamburger & breadcrumbs */}
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 -ml-1 text-white/70 hover:text-white rounded-xl bg-white/[0.04] border border-white/10 lg:hidden"
+              className={`p-2 -ml-1 rounded-xl lg:hidden border transition-colors ${
+                isDark 
+                  ? 'text-white/70 hover:text-white bg-white/[0.04] border-white/10' 
+                  : 'text-slate-600 hover:text-slate-900 bg-slate-100 border-slate-200'
+              }`}
               aria-label="Open sectors menu"
             >
               <Menu className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-2 text-xs font-mono">
-              <span className="text-white/40 hidden sm:inline">Solum FarmOS</span>
-              <span className="text-white/20 hidden sm:inline">/</span>
-              <span className="text-emerald-400 font-medium capitalize">
+              <span className={`hidden sm:inline ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                Solum FarmOS
+              </span>
+              <span className={`hidden sm:inline ${isDark ? 'text-white/20' : 'text-slate-300'}`}>
+                /
+              </span>
+              <span className={`font-semibold capitalize ${
+                isDark ? 'text-emerald-400' : 'text-emerald-800'
+              }`}>
                 {currentTab === 'overview' 
                   ? 'Dashboard Overview' 
                   : currentTab === 'weather' 
@@ -153,13 +172,24 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Theme switcher toggle button */}
+            <ThemeToggle variant="icon" />
+
             {/* Background switcher */}
-            <div className="hidden md:flex items-center bg-white/[0.04] border border-white/10 rounded-xl p-0.5 text-[11px] font-mono">
+            <div className={`hidden md:flex items-center border rounded-xl p-0.5 text-[11px] font-mono ${
+              isDark ? 'bg-white/[0.04] border-white/10' : 'bg-slate-100 border-slate-200'
+            }`}>
               <button
                 type="button"
                 onClick={() => onChangeBgMode('mist')}
                 className={`px-2 py-0.5 rounded-lg transition-colors ${
-                  bgMode === 'mist' ? 'bg-emerald-950/80 text-emerald-300 font-medium' : 'text-white/40 hover:text-white'
+                  bgMode === 'mist' 
+                    ? isDark 
+                      ? 'bg-emerald-950/80 text-emerald-300 font-medium' 
+                      : 'bg-white text-emerald-800 font-semibold shadow-xs border border-slate-200'
+                    : isDark 
+                      ? 'text-white/40 hover:text-white' 
+                      : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 Mist
@@ -168,7 +198,13 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
                 type="button"
                 onClick={() => onChangeBgMode('greenhouse')}
                 className={`px-2 py-0.5 rounded-lg transition-colors ${
-                  bgMode === 'greenhouse' ? 'bg-emerald-950/80 text-emerald-300 font-medium' : 'text-white/40 hover:text-white'
+                  bgMode === 'greenhouse' 
+                    ? isDark 
+                      ? 'bg-emerald-950/80 text-emerald-300 font-medium' 
+                      : 'bg-white text-emerald-800 font-semibold shadow-xs border border-slate-200'
+                    : isDark 
+                      ? 'text-white/40 hover:text-white' 
+                      : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 Glass
@@ -177,7 +213,13 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
                 type="button"
                 onClick={() => onChangeBgMode('solid')}
                 className={`px-2 py-0.5 rounded-lg transition-colors ${
-                  bgMode === 'solid' ? 'bg-emerald-950/80 text-emerald-300 font-medium' : 'text-white/40 hover:text-white'
+                  bgMode === 'solid' 
+                    ? isDark 
+                      ? 'bg-emerald-950/80 text-emerald-300 font-medium' 
+                      : 'bg-white text-emerald-800 font-semibold shadow-xs border border-slate-200'
+                    : isDark 
+                      ? 'text-white/40 hover:text-white' 
+                      : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 Solid
@@ -189,10 +231,14 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl transition-all"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                  isDark
+                    ? 'text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/60 border-emerald-500/30'
+                    : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-300 shadow-2xs'
+                }`}
                 title="Add another operator passcode"
               >
-                <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
+                <UserPlus className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`} />
                 <span className="hidden sm:inline">+ Passcode</span>
               </button>
             )}
@@ -202,19 +248,27 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
               type="button"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="p-2 text-white/60 hover:text-white rounded-xl hover:bg-white/5 border border-white/10 transition-colors"
+              className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+                isDark 
+                  ? 'text-white/60 hover:text-white hover:bg-white/5 border-white/10' 
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200 bg-slate-100 border-slate-200 shadow-2xs'
+              }`}
               title="Refresh Telemetry"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-500' : ''}`} />
             </button>
 
             {/* Lock terminal */}
             <button
               type="button"
               onClick={onLockTerminal}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 rounded-xl transition-all"
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border transition-all cursor-pointer ${
+                isDark 
+                  ? 'text-white bg-white/[0.08] hover:bg-white/[0.14] border-white/10' 
+                  : 'text-slate-700 bg-slate-100 hover:bg-slate-200 border-slate-200 shadow-2xs'
+              }`}
             >
-              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+              <Lock className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`} />
               <span className="hidden sm:inline">Lock</span>
             </button>
           </div>
@@ -230,21 +284,14 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
               onNavigateSector={(tab) => {
                 sound.playKeyTap();
                 setCurrentTab(tab);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              onAddAnimal={(sectorId, animal) => handleAddAnimal(sectorId, animal)}
+              onAddAnimal={handleAddAnimal}
             />
           )}
 
           {currentTab === 'weather' && (
             <div className="space-y-6">
-              <div className="p-6 rounded-3xl bg-[#131E17]/90 border border-white/10">
-                <h1 className="text-xl font-bold text-white">
-                  Farm Weather & Microclimate Station
-                </h1>
-                <p className="text-xs text-white/50 mt-1">
-                  High-precision field atmospheric data, barometric trends, and livestock grazing safety ratings.
-                </p>
-              </div>
               <WeatherForecastSegment weather={weather} />
             </div>
           )}
@@ -268,22 +315,22 @@ export const FarmDashboard: React.FC<FarmDashboardProps> = ({
               onAddAnimal={(animal) => handleAddAnimal(activeSector.id, animal)}
               onUpdateAnimalStatus={(animalId, newStatus) => handleUpdateAnimalStatus(activeSector.id, animalId, newStatus)}
               onRemoveAnimal={(animalId, reason) => handleRemoveAnimal(activeSector.id, animalId, reason)}
-              onAddMilkingRecord={handleAddMilkingRecord}
-              allSectors={sectors}
             />
           )}
         </main>
       </div>
 
-      {/* Add Passcode Modal */}
-      {onAddOperator && (
-        <AddPasscodeModal
-          isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          onSave={(newOp) => onAddOperator(newOp)}
-          existingPasscodes={operators.map((o) => o.passcode)}
-        />
-      )}
+      {/* Add Passcode Modal (from Dashboard view) */}
+      <AddPasscodeModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={(newOp) => {
+          if (onAddOperator) {
+            onAddOperator(newOp);
+          }
+        }}
+        existingPasscodes={operators.map((o) => o.passcode)}
+      />
     </div>
   );
 };

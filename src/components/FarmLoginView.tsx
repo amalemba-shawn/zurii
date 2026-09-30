@@ -5,16 +5,18 @@ import { Keypad } from './Keypad';
 import { QuickPasscodeHelper } from './QuickPasscodeHelper';
 import { ExportVSCodiumModal } from './ExportVSCodiumModal';
 import { AddPasscodeModal } from './AddPasscodeModal';
+import { ThemeToggle } from './ThemeToggle';
+import { useTheme } from '../context/ThemeContext';
 import { sound } from '../utils/audio';
 import { 
   Sprout, 
   Volume2, 
   VolumeX, 
   Clock, 
-  CloudSun,
-  Code2,
-  Plus,
-  KeyRound
+  CloudSun, 
+  Code2, 
+  Plus, 
+  KeyRound 
 } from 'lucide-react';
 
 interface FarmLoginViewProps {
@@ -36,12 +38,12 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
   soundEnabled,
   onToggleSound
 }) => {
+  const { isDark } = useTheme();
   const [passcode, setPasscode] = useState('');
   const [showDigits, setShowDigits] = useState(false);
   const [authStatus, setAuthStatus] = useState<'idle' | 'checking' | 'error' | 'success'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [currentTime, setCurrentTime] = useState('');
-  const [activeHint, setActiveHint] = useState<string | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isAddPasscodeOpen, setIsAddPasscodeOpen] = useState(false);
 
@@ -130,7 +132,6 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
   // Direct physical keyboard listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing into an input modal
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
@@ -167,13 +168,23 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
       <header className="relative z-10 flex items-center justify-between w-full max-w-5xl mx-auto">
         {/* Brand mark */}
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#223527]/90 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-sm backdrop-blur-sm">
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm backdrop-blur-sm transition-colors ${
+            isDark 
+              ? 'bg-[#223527]/90 border border-emerald-500/30 text-emerald-400' 
+              : 'bg-emerald-600 border border-emerald-500 text-white shadow-xs'
+          }`}>
             <Sprout className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-sm font-semibold tracking-tight text-white font-mono flex items-center gap-1.5">
+            <div className={`text-sm font-semibold tracking-tight font-mono flex items-center gap-1.5 ${
+              isDark ? 'text-white' : 'text-slate-900'
+            }`}>
               <span>SOLUM AGRONOMICS</span>
-              <span className="text-[10px] text-emerald-400 font-normal px-1.5 py-0.2 rounded border border-emerald-500/20 bg-emerald-950/40">
+              <span className={`text-[10px] font-normal px-1.5 py-0.2 rounded border ${
+                isDark 
+                  ? 'text-emerald-400 border-emerald-500/20 bg-emerald-950/40' 
+                  : 'text-emerald-800 border-emerald-300 bg-emerald-100/70 font-semibold'
+              }`}>
                 FIELD OS
               </span>
             </div>
@@ -181,40 +192,61 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
         </div>
 
         {/* Ambient telemetry indicators */}
-        <div className="hidden sm:flex items-center gap-4 text-xs font-mono text-white/50">
+        <div className={`hidden sm:flex items-center gap-4 text-xs font-mono ${
+          isDark ? 'text-white/50' : 'text-slate-500'
+        }`}>
           <div className="flex items-center gap-1.5">
-            <CloudSun className="w-3.5 h-3.5 text-amber-300/80" />
+            <CloudSun className={`w-3.5 h-3.5 ${isDark ? 'text-amber-300/80' : 'text-amber-500'}`} />
             <span>64°F · North Orchard</span>
           </div>
-          <span aria-hidden="true" className="text-white/20">/</span>
+          <span aria-hidden="true" className={isDark ? 'text-white/20' : 'text-slate-300'}>/</span>
           <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-emerald-400/80" />
-            <span className="text-white/80 tabular-nums">{currentTime || '08:00 AM'}</span>
+            <Clock className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400/80' : 'text-emerald-600'}`} />
+            <span className={`tabular-nums font-medium ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
+              {currentTime || '08:00 AM'}
+            </span>
           </div>
         </div>
 
-        {/* Terminal Controls: Audio toggle & Background switcher */}
+        {/* Terminal Controls: Theme Switcher, Audio toggle & Background switcher */}
         <div className="flex items-center gap-2">
+          {/* Theme switcher toggle button */}
+          <ThemeToggle variant="icon" />
+
           {/* Audio toggle */}
           <button
             type="button"
             onClick={onToggleSound}
             aria-label={soundEnabled ? 'Mute audio clicks' : 'Enable audio clicks'}
-            className="p-2 rounded-xl text-white/50 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400"
+            className={`p-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 ${
+              isDark 
+                ? 'text-white/50 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10' 
+                : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 shadow-xs'
+            }`}
             title={soundEnabled ? 'Tactile clicks on' : 'Tactile clicks muted'}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-white/30" />}
+            {soundEnabled ? (
+              <Volume2 className="w-4 h-4" />
+            ) : (
+              <VolumeX className={`w-4 h-4 ${isDark ? 'text-white/30' : 'text-slate-400'}`} />
+            )}
           </button>
 
           {/* Background backdrop switcher */}
-          <div className="flex items-center bg-white/[0.04] border border-white/10 rounded-xl p-0.5">
+          <div className={`flex items-center rounded-xl p-0.5 border ${
+            isDark ? 'bg-white/[0.04] border-white/10' : 'bg-slate-100 border-slate-200'
+          }`}>
             <button
               type="button"
               onClick={() => onChangeBgMode('mist')}
               className={`px-2 py-1 text-[11px] font-mono rounded-lg transition-colors ${
                 bgMode === 'mist'
-                  ? 'bg-emerald-950/80 text-emerald-300 font-medium border border-emerald-500/20'
-                  : 'text-white/40 hover:text-white'
+                  ? isDark 
+                    ? 'bg-emerald-950/80 text-emerald-300 font-medium border border-emerald-500/20' 
+                    : 'bg-white text-emerald-800 font-semibold shadow-xs border border-slate-200'
+                  : isDark 
+                    ? 'text-white/40 hover:text-white' 
+                    : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Atmosphere: Morning Mist"
             >
@@ -225,8 +257,12 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
               onClick={() => onChangeBgMode('greenhouse')}
               className={`px-2 py-1 text-[11px] font-mono rounded-lg transition-colors ${
                 bgMode === 'greenhouse'
-                  ? 'bg-emerald-950/80 text-emerald-300 font-medium border border-emerald-500/20'
-                  : 'text-white/40 hover:text-white'
+                  ? isDark 
+                    ? 'bg-emerald-950/80 text-emerald-300 font-medium border border-emerald-500/20' 
+                    : 'bg-white text-emerald-800 font-semibold shadow-xs border border-slate-200'
+                  : isDark 
+                    ? 'text-white/40 hover:text-white' 
+                    : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Atmosphere: Greenhouse"
             >
@@ -237,8 +273,12 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
               onClick={() => onChangeBgMode('solid')}
               className={`px-2 py-1 text-[11px] font-mono rounded-lg transition-colors ${
                 bgMode === 'solid'
-                  ? 'bg-emerald-950/80 text-emerald-300 font-medium border border-emerald-500/20'
-                  : 'text-white/40 hover:text-white'
+                  ? isDark 
+                    ? 'bg-emerald-950/80 text-emerald-300 font-medium border border-emerald-500/20' 
+                    : 'bg-white text-emerald-800 font-semibold shadow-xs border border-slate-200'
+                  : isDark 
+                    ? 'text-white/40 hover:text-white' 
+                    : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Atmosphere: Pure Minimal Solid"
             >
@@ -250,10 +290,14 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
           <button
             type="button"
             onClick={() => setIsExportOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono text-white/70 hover:text-emerald-300 bg-white/[0.04] hover:bg-emerald-950/40 border border-white/10 hover:border-emerald-500/30 transition-all"
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono transition-all ${
+              isDark 
+                ? 'text-white/70 hover:text-emerald-300 bg-white/[0.04] hover:bg-emerald-950/40 border border-white/10 hover:border-emerald-500/30' 
+                : 'text-slate-600 hover:text-emerald-800 bg-slate-100 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 shadow-xs'
+            }`}
             title="Export TypeScript JSX to VSCodium"
           >
-            <Code2 className="w-3.5 h-3.5 text-emerald-400" />
+            <Code2 className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
             <span className="hidden sm:inline">Export Code</span>
           </button>
         </div>
@@ -261,17 +305,29 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
 
       {/* Center Passcode Login Module */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center my-6 md:my-10">
-        <div className="w-full max-w-[390px] rounded-3xl bg-[#121B15]/85 border border-white/10 p-6 sm:p-8 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        <div className={`w-full max-w-[390px] rounded-3xl p-6 sm:p-8 backdrop-blur-2xl transition-all duration-200 border ${
+          isDark 
+            ? 'bg-[#121B15]/85 border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]' 
+            : 'bg-white/95 border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.06)]'
+        }`}>
           {/* Card Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-mono tracking-widest text-emerald-400 uppercase mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className={`inline-flex items-center gap-1.5 text-[11px] font-mono tracking-widest uppercase mb-2 ${
+              isDark ? 'text-emerald-400' : 'text-emerald-700 font-semibold'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                isDark ? 'bg-emerald-400' : 'bg-emerald-600'
+              }`} />
               Station Terminal 04 · Ready
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
+            <h1 className={`text-xl sm:text-2xl font-semibold tracking-tight ${
+              isDark ? 'text-white' : 'text-slate-900'
+            }`}>
               Operator Sign In
             </h1>
-            <p className="text-xs text-white/50 mt-1 max-w-[280px] mx-auto text-balance">
+            <p className={`text-xs mt-1 max-w-[280px] mx-auto text-balance ${
+              isDark ? 'text-white/50' : 'text-slate-500'
+            }`}>
               Key in your unique 4-digit farm passcode to access station telemetry.
             </p>
           </div>
@@ -298,39 +354,53 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
 
           {/* Physical Keyboard Tip */}
           <div className="mt-4 text-center">
-            <span className="text-[11px] font-mono text-white/30">
+            <span className={`text-[11px] font-mono ${
+              isDark ? 'text-white/30' : 'text-slate-400'
+            }`}>
               Tip: Supports keyboard numpad & backspace
             </span>
           </div>
 
           {/* Setup / Add Passcode Banner */}
           {operators.length === 0 ? (
-            <div className="mt-5 p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-center space-y-2.5">
-              <div className="text-xs text-emerald-300 font-medium flex items-center justify-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
+            <div className={`mt-5 p-4 rounded-2xl border text-center space-y-2.5 ${
+              isDark 
+                ? 'bg-emerald-950/40 border-emerald-500/30' 
+                : 'bg-emerald-50/80 border-emerald-200'
+            }`}>
+              <div className={`text-xs font-medium flex items-center justify-center gap-1.5 ${
+                isDark ? 'text-emerald-300' : 'text-emerald-800 font-semibold'
+              }`}>
+                <KeyRound className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                 <span>No passcodes registered yet</span>
               </div>
-              <p className="text-[11px] text-white/50 leading-relaxed">
+              <p className={`text-[11px] leading-relaxed ${
+                isDark ? 'text-white/50' : 'text-slate-600'
+              }`}>
                 Click below to set up your 4-digit passcode and unlock the dashboard.
               </p>
               <button
                 type="button"
                 onClick={() => setIsAddPasscodeOpen(true)}
-                className="w-full py-2.5 px-3 rounded-xl bg-[#376343] hover:bg-[#437752] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Add Your Login Passcode</span>
               </button>
             </div>
           ) : (
-            <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-              <span className="text-white/40">
+            <div className={`mt-4 pt-3 border-t flex items-center justify-between text-xs font-mono ${
+              isDark ? 'border-white/10' : 'border-slate-200'
+            }`}>
+              <span className={isDark ? 'text-white/40' : 'text-slate-500'}>
                 {operators.length} Passcode{operators.length > 1 ? 's' : ''} Active
               </span>
               <button
                 type="button"
                 onClick={() => setIsAddPasscodeOpen(true)}
-                className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-medium transition-colors"
+                className={`flex items-center gap-1 font-medium transition-colors ${
+                  isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-700 hover:text-emerald-800'
+                }`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Another Passcode</span>
@@ -348,16 +418,20 @@ export const FarmLoginView: React.FC<FarmLoginViewProps> = ({
       </main>
 
       {/* Quiet Footer Contract: Minimal metadata */}
-      <footer className="relative z-10 flex flex-col sm:flex-row items-center justify-between text-[11px] text-white/40 font-mono w-full max-w-5xl mx-auto gap-2 pt-4 border-t border-white/5">
+      <footer className={`relative z-10 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono w-full max-w-5xl mx-auto gap-2 pt-4 border-t ${
+        isDark ? 'text-white/40 border-white/5' : 'text-slate-500 border-slate-200'
+      }`}>
         <div className="flex items-center gap-3">
           <span>Solum Agronomics Ltd · Field Gateway v2.4</span>
           <span aria-hidden="true">·</span>
           <button 
             type="button"
             onClick={() => setIsExportOpen(true)}
-            className="hover:text-emerald-300 transition-colors underline underline-offset-2 flex items-center gap-1"
+            className={`transition-colors underline underline-offset-2 flex items-center gap-1 ${
+              isDark ? 'hover:text-emerald-300 text-white/40' : 'hover:text-emerald-700 text-slate-500'
+            }`}
           >
-            <Code2 className="w-3 h-3 text-emerald-400" />
+            <Code2 className={`w-3 h-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
             <span>Export to VSCodium</span>
           </button>
         </div>
