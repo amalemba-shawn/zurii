@@ -41,6 +41,7 @@ interface SectorDetailViewProps {
   onAddAnimal: (animal: IndividualAnimal) => void;
   onUpdateAnimalStatus: (animalId: string, newStatus: AnimalPhysiologicalStatus) => void;
   onRemoveAnimal: (animalId: string, reason: string) => void;
+  onUpdateAnimalPhoto?: (animalId: string, photoUrl: string) => void;
   onAddMilkingRecord?: (record: MilkingRecord) => void;
   allSectors?: LivestockSector[];
 }
@@ -53,6 +54,7 @@ export const SectorDetailView: React.FC<SectorDetailViewProps> = ({
   onAddAnimal,
   onUpdateAnimalStatus,
   onRemoveAnimal,
+  onUpdateAnimalPhoto,
   onAddMilkingRecord,
   allSectors
 }) => {
@@ -480,8 +482,16 @@ export const SectorDetailView: React.FC<SectorDetailViewProps> = ({
                   {/* Top Bar: Name, Tag #, and Status Badge */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-xl bg-[#1E2E23] border border-emerald-500/20 flex items-center justify-center text-xs font-mono font-bold text-emerald-300 group-hover:scale-105 transition-transform">
-                        {animal.name.slice(0, 2).toUpperCase()}
+                      <div className="w-12 h-12 rounded-xl bg-[#1E2E23] border border-emerald-500/20 flex items-center justify-center text-xs font-mono font-bold text-emerald-300 group-hover:scale-105 transition-transform overflow-hidden shrink-0 shadow-2xs">
+                        {animal.photoUrl ? (
+                          <img
+                            src={animal.photoUrl}
+                            alt={animal.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{animal.name.slice(0, 2).toUpperCase()}</span>
+                        )}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -782,6 +792,14 @@ export const SectorDetailView: React.FC<SectorDetailViewProps> = ({
         onRemove={(animalId, reason) => {
           onRemoveAnimal(animalId, reason);
           setSelectedAnimalForProfile(null);
+        }}
+        onUpdatePhoto={(animalId, photoUrl) => {
+          if (onUpdateAnimalPhoto) {
+            onUpdateAnimalPhoto(animalId, photoUrl);
+          }
+          if (selectedAnimalForProfile && selectedAnimalForProfile.id === animalId) {
+            setSelectedAnimalForProfile({ ...selectedAnimalForProfile, photoUrl });
+          }
         }}
       />
 

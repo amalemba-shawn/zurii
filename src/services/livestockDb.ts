@@ -1,4 +1,8 @@
-import { LivestockSector, WeatherData, IndividualAnimal, AnimalPhysiologicalStatus, MilkingRecord } from '../types/farm';
+import { LivestockSector, WeatherData, IndividualAnimal, AnimalPhysiologicalStatus, MilkingRecord, EggCollectionRecord } from '../types/farm';
+import holsteinCowImg from '../assets/images/dairy_cow_portrait_1790781789369.jpg';
+import jerseyCowImg from '../assets/images/jersey_cow_portrait_1790781816708.jpg';
+import saanenGoatImg from '../assets/images/dairy_goat_portrait_1790781802696.jpg';
+import boerGoatImg from '../assets/images/boer_goat_portrait_1790781830304.jpg';
 
 export const INITIAL_LIVESTOCK_SECTORS: LivestockSector[] = [
   {
@@ -41,7 +45,8 @@ export const INITIAL_LIVESTOCK_SECTORS: LivestockSector[] = [
         healthStatus: 'Healthy',
         lastMilkingYieldL: 34.2,
         dateRegistered: '2024-03-12',
-        notes: 'Top tier producer. Milked in Parlour Bay 1.'
+        notes: 'Top tier producer. Milked in Parlour Bay 1.',
+        photoUrl: holsteinCowImg
       },
       {
         id: 'cow-2',
@@ -57,7 +62,8 @@ export const INITIAL_LIVESTOCK_SECTORS: LivestockSector[] = [
         healthStatus: 'Healthy',
         lastMilkingYieldL: 0,
         dateRegistered: '2023-11-20',
-        notes: 'Expecting calf within 3 weeks. Calcium supplement active.'
+        notes: 'Expecting calf within 3 weeks. Calcium supplement active.',
+        photoUrl: jerseyCowImg
       },
       {
         id: 'cow-3',
@@ -148,7 +154,8 @@ export const INITIAL_LIVESTOCK_SECTORS: LivestockSector[] = [
         healthStatus: 'Healthy',
         lastMilkingYieldL: 4.5,
         dateRegistered: '2024-04-18',
-        notes: 'Gentle temperament, artisan cheese quality milk'
+        notes: 'Gentle temperament, artisan cheese quality milk',
+        photoUrl: saanenGoatImg
       },
       {
         id: 'gt-2',
@@ -293,7 +300,8 @@ export const INITIAL_LIVESTOCK_SECTORS: LivestockSector[] = [
         gender: 'Male',
         penOrPasture: 'Terrace Paddock 2',
         healthStatus: 'Healthy',
-        dateRegistered: '2024-07-22'
+        dateRegistered: '2024-07-22',
+        photoUrl: boerGoatImg
       },
       {
         id: 'bmr-2',
@@ -711,6 +719,41 @@ export const livestockDb = {
     localStorage.setItem(STORAGE_KEY_LIVESTOCK_V2, JSON.stringify(next));
   },
 
+  updateAnimalPhoto(
+    sectorId: string,
+    animalId: string,
+    photoUrl: string,
+    operatorName: string
+  ): void {
+    if (typeof window === 'undefined') return;
+    const sectors = this.getSectors();
+    const next = sectors.map(s => {
+      if (s.id === sectorId && s.animals) {
+        let animalName = '';
+        const updatedAnimals = s.animals.map(a => {
+          if (a.id === animalId) {
+            animalName = a.name;
+            return { ...a, photoUrl };
+          }
+          return a;
+        });
+        const newLog = {
+          id: `log-${Date.now()}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          action: `Updated identification photo for ${animalName || 'animal'}`,
+          operator: operatorName
+        };
+        return {
+          ...s,
+          animals: updatedAnimals,
+          recentLogs: [newLog, ...s.recentLogs.slice(0, 8)]
+        };
+      }
+      return s;
+    });
+    localStorage.setItem(STORAGE_KEY_LIVESTOCK_V2, JSON.stringify(next));
+  },
+
   removeAnimal(sectorId: string, animalId: string, reason: string, operatorName: string): void {
     if (typeof window === 'undefined') return;
     const sectors = this.getSectors();
@@ -836,5 +879,134 @@ export const livestockDb = {
       const targetSectorId = target.species === 'cows' ? 'cows-dairy' : 'goats-dairy';
       this.logActivity(targetSectorId, `Revoked/deleted milking record for ${target.animalName} [${target.tagNumber}]`, operatorName);
     }
+  },
+
+  addSector(newSector: LivestockSector, operatorName: string): void {
+    if (typeof window === 'undefined') return;
+    const sectors = this.getSectors();
+    const exists = sectors.some(s => s.id === newSector.id);
+    const updated = exists ? sectors.map(s => s.id === newSector.id ? newSector : s) : [...sectors, newSector];
+    localStorage.setItem(STORAGE_KEY_LIVESTOCK_V2, JSON.stringify(updated));
+  },
+
+  deleteSector(sectorId: string, operatorName: string): void {
+    if (typeof window === 'undefined') return;
+    const sectors = this.getSectors();
+    const updated = sectors.filter(s => s.id !== sectorId);
+    localStorage.setItem(STORAGE_KEY_LIVESTOCK_V2, JSON.stringify(updated));
+  },
+
+  getEggRecords(): EggCollectionRecord[] {
+    if (typeof window === 'undefined') return INITIAL_EGG_RECORDS;
+    try {
+      const data = localStorage.getItem(STORAGE_KEY_EGGS_V1);
+      if (data) {
+        return JSON.parse(data);
+      }
+    } catch {}
+    localStorage.setItem(STORAGE_KEY_EGGS_V1, JSON.stringify(INITIAL_EGG_RECORDS));
+    return INITIAL_EGG_RECORDS;
+  },
+
+  addEggRecord(record: EggCollectionRecord, operatorName: string): void {
+    if (typeof window === 'undefined') return;
+    const records = this.getEggRecords();
+    const next = [record, ...records];
+    localStorage.setItem(STORAGE_KEY_EGGS_V1, JSON.stringify(next));
+
+    this.logActivity(
+      record.flockSectorId,
+      `Logged egg collection (${record.sourceSpecies.toUpperCase()}): ${record.cleanEggsCount} clean + ${record.crackedEggsCount} cracked = ${record.totalEggsCount} eggs [${record.timeOfDay}]`,
+      operatorName
+    );
+  },
+
+  deleteEggRecord(recordId: string, operatorName: string): void {
+    if (typeof window === 'undefined') return;
+    const records = this.getEggRecords();
+    const target = records.find(r => r.id === recordId);
+    const next = records.filter(r => r.id !== recordId);
+    localStorage.setItem(STORAGE_KEY_EGGS_V1, JSON.stringify(next));
+
+    if (target) {
+      this.logActivity(
+        target.flockSectorId,
+        `Revoked egg collection record (${target.sourceSpecies}) from ${target.date}`,
+        operatorName
+      );
+    }
   }
 };
+
+const STORAGE_KEY_EGGS_V1 = 'solum_farm_egg_records_v1';
+
+export const INITIAL_EGG_RECORDS: EggCollectionRecord[] = [
+  {
+    id: 'egg-rec-1',
+    sourceSpecies: 'chicken',
+    flockSectorId: 'chicken',
+    date: new Date().toISOString().split('T')[0],
+    timeOfDay: 'Morning (AM)',
+    cleanEggsCount: 382,
+    crackedEggsCount: 6,
+    totalEggsCount: 388,
+    eggGrade: 'Grade A Large',
+    averageEggWeightGrams: 58.4,
+    flatsCount: 12.5,
+    storageLocation: 'Cold Room Packhouse A (45°F)',
+    notes: 'Pasture Layer Flock 1. Excellent shell density.',
+    operator: 'Elena Vance',
+    timestamp: '07:15 AM'
+  },
+  {
+    id: 'egg-rec-2',
+    sourceSpecies: 'ducks',
+    flockSectorId: 'ducks',
+    date: new Date().toISOString().split('T')[0],
+    timeOfDay: 'Morning (AM)',
+    cleanEggsCount: 142,
+    crackedEggsCount: 2,
+    totalEggsCount: 144,
+    eggGrade: 'Duck Free-Range',
+    averageEggWeightGrams: 72.8,
+    flatsCount: 4.8,
+    storageLocation: 'Cold Room Packhouse B (Duck Bay)',
+    notes: 'Heritage Khaki Campbell & Pekin. Rich golden yolks.',
+    operator: 'Marcus Holt',
+    timestamp: '08:00 AM'
+  },
+  {
+    id: 'egg-rec-3',
+    sourceSpecies: 'chicken',
+    flockSectorId: 'chicken',
+    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+    timeOfDay: 'Morning (AM)',
+    cleanEggsCount: 390,
+    crackedEggsCount: 5,
+    totalEggsCount: 395,
+    eggGrade: 'Grade AA Jumbo',
+    averageEggWeightGrams: 61.2,
+    flatsCount: 13.0,
+    storageLocation: 'Direct CSA Farm Stand',
+    notes: 'Full harvest packed for Wednesday restaurant deliveries.',
+    operator: 'Sarah Jenkins',
+    timestamp: '07:30 AM'
+  },
+  {
+    id: 'egg-rec-4',
+    sourceSpecies: 'ducks',
+    flockSectorId: 'ducks',
+    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+    timeOfDay: 'Afternoon (Noon)',
+    cleanEggsCount: 35,
+    crackedEggsCount: 1,
+    totalEggsCount: 36,
+    eggGrade: 'Duck Free-Range',
+    averageEggWeightGrams: 74.0,
+    flatsCount: 1.2,
+    storageLocation: 'Hatchery Incubator Bay',
+    notes: 'Selected fertile breeding duck eggs set for incubation.',
+    operator: 'Liam Cooper',
+    timestamp: '12:45 PM'
+  }
+];

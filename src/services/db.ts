@@ -1,26 +1,77 @@
 import { FarmOperator, SectorTelemetry, FarmTask } from '../types/farm';
 
-/**
- * Farm Database Service Layer
- * 
- * Replace these storage methods with your own database client:
- * (e.g., Supabase, PostgreSQL via Prisma/Drizzle, Firebase, or custom REST API).
- */
-
 const STORAGE_KEY_OPERATORS = 'farm_db_operators';
 const STORAGE_KEY_SECTORS = 'farm_db_sectors';
 const STORAGE_KEY_TASKS = 'farm_db_tasks';
 
+export const INITIAL_OPERATORS: FarmOperator[] = [
+  {
+    id: 'op-elena',
+    name: 'Elena Vance',
+    role: 'Farm Manager',
+    clearanceLevel: 'Farm Manager',
+    sector: 'All Farm Sectors',
+    passcode: '1234',
+    avatarInitials: 'EV',
+    activeShift: '06:00 – 16:00',
+    assignedTasksCount: 5,
+    badgeId: 'MGR-001'
+  },
+  {
+    id: 'op-marcus',
+    name: 'Marcus Holt',
+    role: 'Admin & Operations Lead',
+    clearanceLevel: 'Farm Manager',
+    sector: 'Agronomy & Livestock',
+    passcode: '5678',
+    avatarInitials: 'MH',
+    activeShift: '07:00 – 17:00',
+    assignedTasksCount: 4,
+    badgeId: 'ADM-002'
+  },
+  {
+    id: 'op-sarah',
+    name: 'Sarah Jenkins',
+    role: 'Senior Milking Specialist',
+    clearanceLevel: 'Specialist',
+    sector: 'Dairy Cattle & Parlour',
+    passcode: '9900',
+    avatarInitials: 'SJ',
+    activeShift: '05:00 – 14:00',
+    assignedTasksCount: 3,
+    badgeId: 'VET-104'
+  },
+  {
+    id: 'op-liam',
+    name: 'Liam Cooper',
+    role: 'Field Technician',
+    clearanceLevel: 'Field Tech',
+    sector: 'Pastures & Greenhouses',
+    passcode: '4321',
+    avatarInitials: 'LC',
+    activeShift: '08:00 – 17:00',
+    assignedTasksCount: 2,
+    badgeId: 'OPR-210'
+  }
+];
+
 export const farmDb = {
   // --- Operators ---
   async getOperators(): Promise<FarmOperator[]> {
-    if (typeof window === 'undefined') return [];
+    if (typeof window === 'undefined') return INITIAL_OPERATORS;
     try {
       const data = localStorage.getItem(STORAGE_KEY_OPERATORS);
-      return data ? JSON.parse(data) : [];
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
     } catch {
-      return [];
+      // Ignore
     }
+    localStorage.setItem(STORAGE_KEY_OPERATORS, JSON.stringify(INITIAL_OPERATORS));
+    return INITIAL_OPERATORS;
   },
 
   async verifyPasscode(passcode: string): Promise<FarmOperator | null> {
@@ -32,6 +83,28 @@ export const farmDb = {
     const operators = await this.getOperators();
     const updated = [...operators.filter((o) => o.id !== operator.id), operator];
     localStorage.setItem(STORAGE_KEY_OPERATORS, JSON.stringify(updated));
+  },
+
+  async updateOperatorRole(
+    operatorId: string, 
+    newRole: string, 
+    newClearance: 'Field Tech' | 'Specialist' | 'Supervisor' | 'Farm Manager',
+    newSector?: string
+  ): Promise<FarmOperator[]> {
+    const operators = await this.getOperators();
+    const updated = operators.map(op => {
+      if (op.id === operatorId) {
+        return {
+          ...op,
+          role: newRole,
+          clearanceLevel: newClearance,
+          sector: newSector || op.sector
+        };
+      }
+      return op;
+    });
+    localStorage.setItem(STORAGE_KEY_OPERATORS, JSON.stringify(updated));
+    return updated;
   },
 
   async deleteOperator(operatorId: string): Promise<void> {

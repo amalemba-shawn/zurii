@@ -63,6 +63,29 @@ export default function App() {
     setOperators((prev) => [newOp, ...prev.filter(o => o.id !== newOp.id)]);
   };
 
+  const handleUpdateOperatorRole = async (
+    operatorId: string, 
+    role: string, 
+    clearance: 'Field Tech' | 'Specialist' | 'Supervisor' | 'Farm Manager',
+    sector?: string
+  ) => {
+    const updated = await farmDb.updateOperatorRole(operatorId, role, clearance, sector);
+    setOperators(updated);
+    if (activeOperator && activeOperator.id === operatorId) {
+      setActiveOperator({
+        ...activeOperator,
+        role,
+        clearanceLevel: clearance,
+        sector: sector || activeOperator.sector
+      });
+    }
+  };
+
+  const handleDeleteOperator = async (operatorId: string) => {
+    await farmDb.deleteOperator(operatorId);
+    setOperators((prev) => prev.filter(o => o.id !== operatorId));
+  };
+
   const getActiveBackgroundImage = () => {
     if (bgMode === 'mist') return mistImage;
     if (bgMode === 'greenhouse') return greenhouseImage;
@@ -143,6 +166,8 @@ export default function App() {
             operators={operators}
             onLockTerminal={handleLockTerminal}
             onAddOperator={handleAddOperator}
+            onUpdateOperatorRole={handleUpdateOperatorRole}
+            onDeleteOperator={handleDeleteOperator}
             bgMode={bgMode}
             onChangeBgMode={(mode) => {
               setImageError(false);
